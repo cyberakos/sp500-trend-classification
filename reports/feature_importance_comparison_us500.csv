@@ -1,0 +1,21 @@
+Feature,XGBoost_Importance_Pct,LSTM_Importance_Pct,Category
+is_weekend,0.0,0.0,Ciklikus Idő
+hour_sin,4.26,15.24,Ciklikus Idő
+hour_cos,10.63,5.58,Ciklikus Idő
+day_sin,4.71,16.02,Ciklikus Idő
+day_cos,5.39,2.68,Ciklikus Idő
+is_asia,6.94,2.95,Kereskedési Szakaszok
+is_london,21.09,14.7,Kereskedési Szakaszok
+is_ny,3.24,4.76,Kereskedési Szakaszok
+is_overlap,3.42,0.0,Kereskedési Szakaszok
+body_pct,2.92,0.4,Gyertyamorfológia
+wick_ratio,2.73,0.0,Gyertyamorfológia
+log_ret_1,2.84,0.41,Log Hozamok (Lags)
+log_ret_3,3.39,0.2,Log Hozamok (Lags)
+log_ret_6,3.79,1.65,Log Hozamok (Lags)
+log_ret_24,4.38,1.24,Log Hozamok (Lags)
+atr_pct,4.41,0.61,Volatilitás & Trend
+dist_ema50,4.17,6.03,Volatilitás & Trend
+dist_ema200,4.5,2.25,Volatilitás & Trend
+rsi,3.97,17.53,Momentum & Forgalom
+vol_ratio,3.22,7.73,Momentum & Forgalom

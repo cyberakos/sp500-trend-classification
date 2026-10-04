@@ -1,0 +1,52 @@
+thesis_project/
+│   data_export.py
+│   map.txt
+│
+├───data
+│   ├───processed
+│   │       features_us500_h1.csv
+│   │       labeled_us500_h1.csv
+│   │       walk_forward_results.csv
+│   │
+│   └───raw
+│           data_us500_h1.csv
+│
+├───models
+│   └───saved
+│           lstm_single_split_us500.pt
+│           xgboost_single_split_us500.json
+│
+├───reports
+│   │   backtest_metrics_comparison_us500.csv
+│   │   best_hyperparameters_us500.json
+│   │   feature_importance_comparison_us500.csv
+│   │   trades_lstm_us500.csv
+│   │   trades_xgboost_us500.csv
+│   │   walk_forward_results_us500.csv
+│   │
+│   └───figures
+│           confusion_matrices_single_us500.png
+│           drawdown_curves_us500.png
+│           equity_curves_us500.png
+│           lstm_feature_importance_us500.png
+│           lstm_learning_curves_us500.png
+│           optuna_lstm_importance_us500.png
+│           optuna_xgb_importance_us500.png
+│           xgb_feature_importance_us500.png
+│           xgb_loss_curve_us500.png
+│
+└───src
+    │   backtest.py
+    │   config.py
+    │   features.py
+    │   feature_importance.py
+    │   labeling.py
+    │   train_single_split.py
+    │   tune_optuna.py
+    │   walk_forward.py
+    │   __init__.py
+    │
+    └───models
+           lstm_model.py
+           xgboost_model.py
+           __init__.py

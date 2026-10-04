@@ -1,0 +1,22 @@
+{
+    "xgboost": {
+        "best_macro_f1": 0.3342,
+        "params": {
+            "n_estimators": 300,
+            "max_depth": 4,
+            "learning_rate": 0.06594299947165576,
+            "subsample": 0.6,
+            "colsample_bytree": 0.7,
+            "reg_lambda": 4.486943953848945
+        }
+    },
+    "lstm": {
+        "best_macro_f1": 0.3169,
+        "params": {
+            "hidden_dim": 96,
+            "dropout": 0.2,
+            "learning_rate": 0.00036367347562098684,
+            "batch_size": 256
+        }
+    }
+}
