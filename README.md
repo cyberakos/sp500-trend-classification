@@ -53,7 +53,20 @@ A pénzügyi idősorokon tanuló modellek gyakori hibái a túlilleszkedés (ove
 │   │   trades_xgboost_us500.csv                # XGBoost szimulált kereskedési naplója
 │   │   walk_forward_results_us500.csv          # 29 Walk-Forward tesztablak out-of-sample predikciói
 │   │
-│   ├───fixed_horizon                       # Az RQ2 kontrollkísérlet kimenetei (WF, backtest, összehasonlító táblák)
+│   ├───fixed_horizon                       # Az RQ2 kontrollkísérlet kimenetei (fix horizontos címkékkel)
+│   │   │   walk_forward_results_us500.csv          # A 29 tesztablak predikciói fix horizontos címkékkel
+│   │   │   backtest_metrics_comparison_us500.csv   # Backtest-mutatók
+│   │   │   trades_xgboost_us500.csv                # XGBoost kötésnapló
+│   │   │   trades_lstm_us500.csv                   # LSTM kötésnapló
+│   │   │   rq2_classification_us500.csv            # Osztályozási mutatók (TB vs. FH)
+│   │   │   rq2_signal_quality_us500.csv            # Vételi jelek kimenete a ±2,5 ATR korlátokon
+│   │   │   rq2_wilcoxon_us500.csv                  # Ablakonkénti páros Wilcoxon-próba
+│   │   │   rq2_backtest_comparison_us500.csv       # Backtest-mutatók egymás mellett (TB vs. FH)
+│   │   │
+│   │   └───figures
+│   │           drawdown_curves_us500.png
+│   │           equity_curves_us500.png
+│   │           equity_tb_vs_fixed_us500.png        # Közös tőkegörbe (TB vs. FH)
 │   │
 │   └───figures                             # Ábrák
 │           confusion_matrices_single_us500.png
