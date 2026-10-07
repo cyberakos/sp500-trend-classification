@@ -1,0 +1,5 @@
+Modell,Címkézés,Vételi jelek,Felső korlát előbb (%),Alsó korlát előbb (%),Lejárt az idő (%),Alapráta: felső korlát az összes órán (%)
+XGBoost,Triple Barrier,9370,44.81,41.92,13.27,43.58
+XGBoost,Fix horizont,20834,43.44,40.97,15.59,43.58
+LSTM,Triple Barrier,10327,45.95,42.52,11.53,43.58
+LSTM,Fix horizont,18590,44.94,40.97,14.09,43.58

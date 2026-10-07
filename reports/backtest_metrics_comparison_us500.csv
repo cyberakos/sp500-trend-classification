@@ -1,12 +1,12 @@
 Mutató (Metrika),XGBoost US500,LSTM US500,Buy & Hold US500
-Total Return (%),105.13,-1.81,170.26
-CAGR (%),10.14,-0.25,14.31
-Annualized Volatility (%),14.62,14.57,19.18
-Sharpe Ratio,0.73,0.07,0.79
-Sortino Ratio,0.65,0.06,0.75
-Max Drawdown (%),-25.99,-21.71,-35.67
-Calmar Ratio,0.39,-0.01,0.4
-Total Trades,1348.0,1382.0,0.0
-Win Rate (%),48.44,46.24,0.0
-Profit Factor,1.1,1.0,0.0
-Payoff Ratio,1.17,1.16,0.0
+Total Return (%),123.42,35.11,170.26
+CAGR (%),11.42,4.13,14.31
+Annualized Volatility (%),14.06,12.25,19.18
+Sharpe Ratio,0.83,0.39,0.79
+Sortino Ratio,0.73,0.3,0.75
+Max Drawdown (%),-23.74,-17.48,-35.67
+Calmar Ratio,0.48,0.24,0.4
+Total Trades,1259.0,974.0,0.0
+Win Rate (%),48.53,47.13,0.0
+Profit Factor,1.12,1.06,0.0
+Payoff Ratio,1.19,1.18,0.0

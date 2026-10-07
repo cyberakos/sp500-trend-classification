@@ -1,5 +1,7 @@
 import json
+import shutil
 import sys
+import warnings
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -16,10 +18,15 @@ from src.config import PipelineConfig
 from src.models import LSTMModel, XGBoostModel
 
 optuna.logging.set_verbosity(optuna.logging.WARNING)
+# az optuna ábrázoló függvénye kísérleti, ezt a figyelmeztetést nem kérjük
+warnings.filterwarnings("ignore", category=optuna.exceptions.ExperimentalWarning)
 
 REPORTS_DIR = PROJECT_ROOT / "reports"
 FIGURES_DIR = PROJECT_ROOT / "reports" / "figures"
 DATA_FILE = PROJECT_ROOT / "data" / "processed" / "labeled_us500_h1.csv"
+PARAMS_FILE = REPORTS_DIR / "best_hyperparameters_us500.json"
+# a próbálkozások ide mentődnek, így az ábrák később hangolás nélkül is újrarajzolhatók
+STORAGE = f"sqlite:///{(REPORTS_DIR / 'optuna_us500.db').as_posix()}"
 
 REPORTS_DIR.mkdir(parents=True, exist_ok=True)
 FIGURES_DIR.mkdir(parents=True, exist_ok=True)
@@ -32,6 +39,40 @@ def get_features_and_target(df):
         "tick_volume", "spread", "atr", "hour", "day_of_week", "target"
     }
     return [c for c in df.columns if c not in excluded], "target"
+
+
+def new_study(name):
+    # ha már van ilyen nevű study az adatbázisban, töröljük, hogy tiszta legyen a futás
+    try:
+        optuna.delete_study(study_name=name, storage=STORAGE)
+    except KeyError:
+        pass
+    return optuna.create_study(study_name=name, storage=STORAGE, direction="maximize",
+                               sampler=optuna.samplers.TPESampler(seed=42))
+
+
+def save_importance_plots():
+    # a mentett studykból rajzolja meg a paraméter-fontossági ábrákat
+    for name in ["xgb", "lstm"]:
+        try:
+            study = optuna.load_study(study_name=f"{name}_us500", storage=STORAGE)
+            ax = optuna.visualization.matplotlib.plot_param_importances(study)
+            # az optuna a saját angol címét bal oldali címként teszi fel, ezt töröljük
+            ax.set_title("", loc="left")
+            ax.set_title(f"{name.upper()} paraméter-érzékenység (US500)", fontweight="bold")
+            ax.set_xlabel("Relatív fontosság")
+            ax.set_ylabel("Hiperparaméter")
+            legend = ax.get_legend()
+            if legend is not None:
+                legend.remove()
+            plt.tight_layout()
+            out_path = FIGURES_DIR / f"optuna_{name}_importance_us500.png"
+            plt.savefig(out_path, dpi=300)
+            plt.close("all")
+            print(f"[ok] Ábra elmentve: {out_path}")
+        except Exception as e:
+            plt.close("all")
+            print(f"[hiba] {name} ábra nem készült el: {e}")
 
 
 def main():
@@ -56,6 +97,12 @@ def main():
     X_train, y_train = train_df[feature_cols].values, train_df[target_col].values
     X_val, y_val = val_df[feature_cols].values, val_df[target_col].values
 
+    # a régi paraméterfájlról biztonsági mentés, mielőtt felülírnánk
+    if PARAMS_FILE.exists():
+        backup = REPORTS_DIR / "best_hyperparameters_us500_backup.json"
+        shutil.copy(PARAMS_FILE, backup)
+        print(f"[*] A korábbi paraméterek mentése: {backup}")
+
     best_results = {}
 
     # xgboost hangolás (30 kísérlet)
@@ -75,7 +122,7 @@ def main():
         preds = model.predict(X_val)
         return f1_score(y_val, preds, average="macro")
 
-    xgb_study = optuna.create_study(direction="maximize", sampler=optuna.samplers.TPESampler(seed=42))
+    xgb_study = new_study("xgb_us500")
     xgb_study.optimize(xgb_objective, n_trials=30, show_progress_bar=True)
     best_results["xgboost"] = {"best_macro_f1": round(xgb_study.best_value, 4), "params": xgb_study.best_params}
     print(f"[ok] Legjobb US500 XGBoost Macro-F1: {xgb_study.best_value:.4f}")
@@ -100,27 +147,18 @@ def main():
         preds = model.predict(X_val_seq)
         return f1_score(y_val_seq, preds, average="macro")
 
-    lstm_study = optuna.create_study(direction="maximize", sampler=optuna.samplers.TPESampler(seed=42))
+    lstm_study = new_study("lstm_us500")
     lstm_study.optimize(lstm_objective, n_trials=12, show_progress_bar=True)
     best_results["lstm"] = {"best_macro_f1": round(lstm_study.best_value, 4), "params": lstm_study.best_params}
     print(f"[ok] Legjobb US500 LSTM Macro-F1: {lstm_study.best_value:.4f}")
 
     # mentés
-    json_path = REPORTS_DIR / "best_hyperparameters_us500.json"
-    with open(json_path, "w", encoding="utf-8") as f:
+    with open(PARAMS_FILE, "w", encoding="utf-8") as f:
         json.dump(best_results, f, indent=4)
-    print(f"\n[ok] US500 hiperparaméterek elmentve: {json_path}")
+    print(f"\n[ok] US500 hiperparaméterek elmentve: {PARAMS_FILE}")
 
     # paraméter fontosság ábrák
-    for study, name in [(xgb_study, "xgb"), (lstm_study, "lstm")]:
-        try:
-            optuna.visualization.matplotlib.plot_param_importances(study)
-            plt.title(f"{name.upper()} Paraméter-érzékenység (US500)", fontweight="bold")
-            plt.tight_layout()
-            plt.savefig(FIGURES_DIR / f"optuna_{name}_importance_us500.png", dpi=300)
-            plt.close()
-        except Exception:
-            pass
+    save_importance_plots()
 
 
 if __name__ == "__main__":

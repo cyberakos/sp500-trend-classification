@@ -1,0 +1,7 @@
+Címkézés,Modell,Pontosság,Macro-F1,Cohen-kappa
+Triple Barrier,Mindig Long,0.4358,0.2023,0.0
+Triple Barrier,XGBoost,0.4299,0.3477,0.0263
+Triple Barrier,LSTM,0.4221,0.3543,0.0224
+Fix horizont,Mindig Long,0.5062,0.2241,0.0
+Fix horizont,XGBoost,0.4835,0.3131,0.0135
+Fix horizont,LSTM,0.4771,0.3139,0.0089
