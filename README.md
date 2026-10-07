@@ -223,11 +223,15 @@ Az XGBoost-stratégia nettó eredményének nagy része 2020-ból és 2023-ból 
 
 ### 6.3. Jellemzőfontosság
 
-- XGBoost (gain): a legnagyobb súlyú változók az `is_london` (21,1%), az `hour_cos` (10,6%) és az `is_asia` (6,9%). Az óra- és naptípusú változók együtt kb. 59,7%-ot adnak, a hozam-, trend- és volatilitásjellemzők egyenként legfeljebb 4,5%-ot.
-- LSTM (permutációs fontosság): a `rsi` (17,5%), a `day_sin` (16,0%), az `hour_sin` (15,2%) és az `is_london` (14,7%) a legfontosabb; az óra- és napváltozók, valamint a napszaki jelzők együtt kb. 61,9%-ot adnak.
+A jellemzőfontosság az egyszeri felosztáson (70/15/15) tanított modelleken készül, a teszt-15%-on (2025–2026).
+
+- XGBoost (gain): a legnagyobb súlyú változók az `is_london` (22,1%), a `hour_cos` (12,4%) és az `is_asia` (5,8%). Az óra- és naptípusú változók, valamint a napszaki jelzők együtt kb. 61%-ot adnak, a hozam-, trend- és volatilitásjellemzők egyenként legfeljebb 4,6%-ot.
+- LSTM (permutációs fontosság, macro-F1 csökkenése): a `rsi` (19,3%), a `hour_cos` (17,3%), a `day_sin` (12,2%), az `is_london` (9,1%) és a `hour_sin` (9,0%) a legfontosabb; az idő- és szakaszváltozók együtt kb. 66%-ot adnak. A log-hozamok, a `body_pct` és az `atr_pct` permutálása nem rontott a teljesítményen.
 - Az `is_weekend` értéke az adatsorban végig 0, a fontossága mindkét modellnél 0.
 
 A modellek tehát jelentős részben napszaki mintázatra támaszkodnak. Ennek a hatásnak a mértéke a jelenlegi elemzésből nem választható el a trendinformációtól.
+
+Az egyszeri felosztású LSTM a validációs veszteség alapján a 4. korszaknál állt meg, és a tesztrészen szinte kizárólag vételt jósol (argmax szerint a tesztórák kb. 96%-ában), a küszöbös szabályt pedig egyetlen órán sem teljesíti. A permutációs fontosság ezért egy majdnem állandó kimenetű modell apró eltéréseit méri, és csak óvatosan értelmezhető.
 
 ---
 
