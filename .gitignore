@@ -1,4 +1,3 @@
-@"
 venv/
 .venv/
 __pycache__/
@@ -6,4 +5,4 @@ __pycache__/
 data/
 models/saved/
 .ipynb_checkpoints/
-"@ | Out-File -Encoding utf8 .gitignore
+reports/optuna_us500.db
