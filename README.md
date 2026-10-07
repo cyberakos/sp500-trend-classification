@@ -25,7 +25,6 @@ A pénzügyi idősorokon tanuló modellek gyakori hibái a túlilleszkedés (ove
 .
 │   data_export.py                          # Nyers ár- és forgalmi adatok exportálása MetaTrader 5-ből
 │   requirements.txt                        # A projekt Python-függőségei
-│   futtatas_rq2.bat                        # Az RQ2 kontrollkísérlet futtatása egy lépésben (Windows)
 │   map.txt                                 # Projekt könyvtártérkép
 │   README.md                               # Rendszerdokumentáció
 │
@@ -146,8 +145,6 @@ python.exe .\src\labeling_fixed.py       # fix horizontos címkék, ugyanazokon 
 python.exe .\src\walk_forward_fixed.py   # Walk-Forward és backtest a fix horizontos címkékkel
 python.exe .\src\compare_labeling.py     # összehasonlító táblák és közös tőkegörbe
 ```
-
-Ugyanez egy lépésben: `futtatas_rq2.bat` (szükség esetén létrehozza a virtuális környezetet és telepíti a függőségeket).
 
 ---
 
