@@ -230,6 +230,52 @@ A modellek tehát jelentős részben napszaki mintázatra támaszkodnak. Ennek a
 
 Az egyszeri felosztású LSTM a validációs veszteség alapján a 4. korszaknál állt meg, és a tesztrészen szinte kizárólag vételt jósol (argmax szerint a tesztórák kb. 96%-ában), a küszöbös szabályt pedig egyetlen órán sem teljesíti. A permutációs fontosság ezért egy majdnem állandó kimenetű modell apró eltéréseit méri, és csak óvatosan értelmezhető.
 
+### 6.4. Triple Barrier vs. fix horizontos címkézés (RQ2)
+
+A kontrollkísérlet ugyanazt a csővezetéket futtatja (jellemzők, 29 Walk-Forward ablak, hiperparaméterek, backtest-szabályok), csak a tanító címke más: a 24 gyertyás log-hozam előjele egy fix semleges sávval (|r| ≤ 0,096%). A sáv szélessége úgy van kalibrálva az első tanítóablakon, hogy a semleges arány ott megegyezzen a Triple Barrierével. A két címkézés a sorok 69,8%-ában egyezik; a teljes mintán a fix horizontos eloszlás Long 49,9%, Short 38,7%, Semleges 11,5%.
+
+Osztályozás (argmax, mindkettő a saját címkéihez mérve):
+
+| Címkézés | Modell | Pontosság | Macro-F1 | Cohen-kappa |
+|---|---|---|---|---|
+| Triple Barrier | Mindig Long | 43,58% | 0,202 | 0,000 |
+| Triple Barrier | XGBoost | 42,99% | 0,348 | 0,026 |
+| Triple Barrier | LSTM | 42,21% | 0,354 | 0,022 |
+| Fix horizont | Mindig Long | 50,62% | 0,224 | 0,000 |
+| Fix horizont | XGBoost | 48,35% | 0,313 | 0,014 |
+| Fix horizont | LSTM | 47,71% | 0,314 | 0,009 |
+
+A két címkézés célváltozója eltér, ezért a táblázat önmagában nem dönti el a kérdést. Közös mérceként a backtest belépési szabályát (p_buy ≥ 0,52, p_buy − p_sell > 0,10) teljesítő órák kimenetelét vizsgáltuk a ±2,5 ATR korlátokon:
+
+| Modell | Címkézés | Vételi jelek | Felső korlát előbb | Alsó korlát előbb | Időkorlát |
+|---|---|---|---|---|---|
+| XGBoost | Triple Barrier | 9 370 | 44,81% | 41,92% | 13,27% |
+| XGBoost | Fix horizont | 20 834 | 43,44% | 40,97% | 15,59% |
+| LSTM | Triple Barrier | 10 327 | 45,95% | 42,52% | 11,53% |
+| LSTM | Fix horizont | 18 590 | 44,94% | 40,97% | 14,09% |
+
+A felső korlát alaprátája az összes órán 43,58%. Ablakonként a Triple Barrier az XGBoost-nál 29-ből 20, az LSTM-nél 15 ablakban adott jobb találati arányt; a páros Wilcoxon-próba egyik esetben sem szignifikáns (p ≈ 0,12 és 0,77). A fix horizontos modellek kb. kétszer annyi vételi jelet adnak.
+
+Backtest (azonos szabályok, csak a tanító címke más):
+
+| Mutató | XGBoost – TB | XGBoost – FH | LSTM – TB | LSTM – FH | Buy & Hold |
+|---|---|---|---|---|---|
+| Total Return (%) | 123,42 | 74,06 | 35,11 | 14,69 | 170,26 |
+| CAGR (%) | 11,42 | 7,74 | 4,13 | 1,86 | 14,31 |
+| Évesített szórás (%) | 14,06 | 15,55 | 12,25 | 13,90 | 19,18 |
+| Sharpe-ráta | 0,83 | 0,55 | 0,39 | 0,21 | 0,79 |
+| Max Drawdown (%) | -23,74 | -33,27 | -17,48 | -33,14 | -35,67 |
+| Calmar-ráta | 0,48 | 0,23 | 0,24 | 0,06 | 0,40 |
+| Kötésszám | 1 259 | 1 593 | 974 | 1 264 | – |
+| Profit Factor | 1,12 | 1,07 | 1,06 | 1,02 | – |
+
+- A Triple Barrier címkézéssel mindkét modell magasabb hozamot, jobb Sharpe-rátát és kb. 10–15 százalékponttal kisebb maximális visszaesést ért el, kevesebb kötéssel.
+- Az XGBoost-nál a Triple Barrier tőkegörbéje szinte a teljes időszakban a fix horizontos fölött fut. Az LSTM-nél a fix horizontos görbe 2021 és 2025 között többnyire felül volt, a végső különbség a 2025 végi–2026-os szakaszban alakult ki, ezért az LSTM-re vonatkozó eredmény időszakfüggő.
+- A különbség elsősorban a jelek szelektívebb voltából adódik; a jelenkénti találati arány javulása kicsi és statisztikailag nem szignifikáns.
+- Korlát: a hiperparaméterek a Triple Barrier címkékre lettek hangolva, és a fix horizontos futás is ezeket használja, ami a Triple Barrier javára torzíthat.
+
+Kimenetek: `reports/fixed_horizon/rq2_classification_us500.csv`, `rq2_signal_quality_us500.csv`, `rq2_wilcoxon_us500.csv`, `rq2_backtest_comparison_us500.csv`, `figures/equity_tb_vs_fixed_us500.png`.
+
 ---
 
 ## 7. Ismert korlátok
