@@ -3,6 +3,6 @@ venv/
 __pycache__/
 *.pyc
 data/
-models/saved/
+**/models/saved/
 .ipynb_checkpoints/
-reports/optuna_us500.db
+**/optuna_us500.db

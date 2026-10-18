@@ -1,0 +1,15 @@
+# adatkezelés és ábrák
+numpy
+pandas
+matplotlib
+
+# modellek, hangolás, kiértékelés
+scikit-learn
+scipy
+xgboost
+optuna
+torch
+
+# csak az adatletöltéshez kell (data_export.py), csak Windowson működik
+MetaTrader5
+pytz

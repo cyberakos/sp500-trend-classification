@@ -1,0 +1,11 @@
+Modell,Modell jelzésgyakorisága (%),Véletlen jelzésgyakoriság (%),Mutató,Modell értéke,Véletlen átlag,Véletlen 5%,Véletlen 95%,Modell percentilise (%)
+XGBoost,17.13,5.14,Total Return (%),138.51,22.86,-26.6,90.75,99.5
+XGBoost,17.13,5.14,Sharpe Ratio,0.95,0.24,-0.27,0.74,99.5
+XGBoost,17.13,5.14,Max Drawdown (%),-18.49,-33.25,-48.43,-19.97,97.0
+XGBoost,17.13,5.14,Profit Factor,1.2,1.03,0.94,1.13,99.5
+XGBoost,17.13,5.14,Total Trades,1046.0,1042.12,1018.0,1063.05,58.0
+LSTM,28.4,5.76,Total Return (%),98.98,27.9,-26.89,93.17,95.5
+LSTM,28.4,5.76,Sharpe Ratio,0.77,0.27,-0.26,0.74,95.0
+LSTM,28.4,5.76,Max Drawdown (%),-27.73,-32.7,-49.85,-18.45,64.0
+LSTM,28.4,5.76,Profit Factor,1.14,1.04,0.94,1.13,95.5
+LSTM,28.4,5.76,Total Trades,1100.0,1098.85,1074.0,1123.05,50.5

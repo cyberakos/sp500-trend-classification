@@ -8,14 +8,16 @@ Kutatási és gépi tanulási keretrendszer az **S&P 500 index (US500 CFD)** ór
 
 ## 1. A projekt áttekintése
 
-A pénzügyi idősorokon tanuló modellek gyakori hibái a túlilleszkedés (overfitting), a jövőbe tekintési torzítás (lookahead bias) és a tranzakciós költségek figyelmen kívül hagyása. A csővezeték ezekre az alábbi megoldásokat alkalmazza:
+A pénzügyi idősorokon tanuló modellek gyakori hibái a túlilleszkedés (overfitting), a jövőbe tekintési torzítás (lookahead bias) és a tranzakciós költségek figyelmen kívül hagyása. A rendszer ezekre az alábbi megoldásokat alkalmazza:
 
 - **Stacionárius jellemzőkészlet:** 20 magyarázó változó, amely több horizontú logaritmikus hozamokat, gyertyamorfológiai mutatókat, volatilitással normalizált trendtávolságokat (`tanh`), RSI-t, normalizált ATR-t, relatív forgalmat, trigonometrikus időkódolást és napszaki jelzőket tartalmaz. A nyers árak nem kerülnek a modellek bemenetére.
 - **Dinamikus Triple Barrier címkézés:** a profitcél és a stop-loss 2,5 × ATR(14) távolságra van a belépéstől, a függőleges (időbeli) korlát 24 gyertya. Az egyidejű átlépés a neutrális (0) osztályba kerül.
 - **Idősoros validáció:** 29 ablakos, gördülő Walk-Forward felosztás 24 gyertyás kiürítési hézaggal (purging) a tanító- és tesztadat között, így az átfedő címkék nem okoznak szivárgást.
 - **Költségekkel terhelt backtest:** eseményvezérelt, Long-only szimuláció, ügyletenként 1% kockázattal, a platform spread-adatával, fix csúszással (slippage) és gap-kezeléssel.
 - **Szivárgásmentes hangolás:** az Optuna csak az első Walk-Forward tanítóablakon belül keres hiperparamétereket, így a paraméterválasztás nem lát rá a tesztidőszakra.
-- **Kontrollkísérlet (RQ2):** ugyanaz a csővezeték fix horizontos címkékkel is lefuttatható, így a Triple Barrier címkézés hatása elkülöníthető.
+- **Kontrollkísérlet (RQ2):** ugyanaz a feldolgozási folyamat fix horizontos címkékkel is lefuttatható, így a Triple Barrier címkézés hatása elkülöníthető.
+- **Véletlen viszonyítási alapok:** a modellek egy véletlen tippelő osztályozóval és egy véletlen belépésű, azonos kockázatkezelésű és kötésszámú stratégiával is össze vannak vetve, így a piaci trendből adódó nyereség elkülöníthető a modellek hozzájárulásától.
+- **Második eszköz:** a `Control_XAUUSD/` mappa ugyanezt a kódot a spot arany adatsorán futtatja, saját adattisztítási lépéssel.
 
 ---
 
@@ -27,6 +29,8 @@ A pénzügyi idősorokon tanuló modellek gyakori hibái a túlilleszkedés (ove
 │   requirements.txt                        # A projekt Python-függőségei
 │   map.txt                                 # Projekt könyvtártérkép
 │   README.md                               # Rendszerdokumentáció
+│
+├───Control_XAUUSD                          # Kontrollkísérlet a spot arany adatsorán (saját README-vel)
 │
 ├───data
 │   ├───raw
@@ -52,6 +56,8 @@ A pénzügyi idősorokon tanuló modellek gyakori hibái a túlilleszkedés (ove
 │   │   trades_lstm_us500.csv                   # LSTM szimulált kereskedési naplója
 │   │   trades_xgboost_us500.csv                # XGBoost szimulált kereskedési naplója
 │   │   walk_forward_results_us500.csv          # 29 Walk-Forward tesztablak out-of-sample predikciói
+│   │   random_baseline_us500.csv               # Véletlen tippelés referenciája (50 futás)
+│   │   random_entry_benchmark_us500.csv        # Véletlen belépésű összehasonlítás (200 futás)
 │   │
 │   ├───fixed_horizon                       # Az RQ2 kontrollkísérlet kimenetei (fix horizontos címkékkel)
 │   │   │   walk_forward_results_us500.csv          # A 29 tesztablak predikciói fix horizontos címkékkel
@@ -92,6 +98,8 @@ A pénzügyi idősorokon tanuló modellek gyakori hibái a túlilleszkedés (ove
     │   labeling_fixed.py                   # Fix horizontos kontrollcímkézés (RQ2)
     │   walk_forward_fixed.py               # WF és backtest a fix horizontos címkékkel (RQ2)
     │   compare_labeling.py                 # Triple Barrier és fix horizont összehasonlítása (RQ2)
+    │   random_baseline.py                  # Véletlen tippelés referenciája
+    │   random_entry_benchmark.py           # Véletlen belépésű stratégia azonos szabályokkal
     │
     └───models
             __init__.py                     # Exportálja az XGBoostModel és LSTMModel osztályokat
@@ -121,7 +129,7 @@ pip install -r requirements.txt
 
 ---
 
-## 4. A csővezeték futtatása
+## 4. A futtatás lépései
 
 A lépések egymásra épülnek, a projekt gyökeréből futtathatók:
 
@@ -149,6 +157,12 @@ python.exe .\src\walk_forward.py
 
 # 8. Backtest és ábrák
 python.exe .\src\backtest.py
+
+# 9. Véletlen tippelés referenciája (reports/random_baseline_us500.csv)
+python.exe .\src\random_baseline.py
+
+# 10. Véletlen belépésű összehasonlítás (reports/random_entry_benchmark_us500.csv, kb. 10-20 perc)
+python.exe .\src\random_entry_benchmark.py
 ```
 
 Az RQ2 kontrollkísérlet a fenti lépések után futtatható. A meglévő Triple Barrier eredményeket nem írja felül, a kimenetek a `reports/fixed_horizon/` mappába kerülnek:
@@ -199,7 +213,8 @@ Az out-of-sample minta osztályeloszlása: Short 41,29%, Neutrális 15,14%, Long
 | LSTM, argmax | 42,21% | 0,354 |
 
 - Küszöbös predikcióval mindkét modell macro-F1-e a véletlen tippelés szintjén vagy kissé alatta van. Argmax-predikcióval kissé a véletlen fölött vannak, a pontosságuk viszont a mindig Long viszonyítási alap alatt marad.
-- A két modell között nincs érdemi különbség: az ablakonkénti macro-F1 átlaga 0,306 (XGBoost) és 0,304 (LSTM), az LSTM a 29 ablakból 11-ben jobb, páros Wilcoxon-próba p ≈ 0,47. Az ablakok tanítóadata átfedi egymást, ezért a p-érték tájékoztató jellegű.
+- A két modell között csekély az eltérés: az ablakonkénti macro-F1 átlaga 0,306 (XGBoost) és 0,304 (LSTM), az LSTM a 29 ablakból 11-ben bizonyult jobbnak.
+- A véletlen tippelés sora a `random_baseline.py` kimenete (egyenletes eloszlás a három osztályon, 50 futás, seed = 42).
 - A backtest belépési szabályát (p_buy ≥ 0,52, p_buy − p_sell > 0,10) teljesítő órák után az ár az esetek 44,8%-ában (XGBoost) és 46,0%-ában (LSTM) érte el először a felső korlátot, szemben a 43,6%-os alaprátával.
 
 ### 6.2. Szimulált stratégia (Long-only, költségekkel)
@@ -231,6 +246,15 @@ Az out-of-sample minta osztályeloszlása: Short 41,29%, Neutrális 15,14%, Long
 
 Az XGBoost-stratégia nettó eredményének nagy része 2020-ból és 2023-ból származik, 2022-ben a stratégia jelentős veszteséget szenvedett.
 
+**Véletlen belépésű összehasonlítás.** A `random_entry_benchmark.py` ugyanazokkal a kockázatkezelési és kilépési szabályokkal, véletlen belépési pontokkal szimulál. A véletlen jelzések gyakorisága úgy van beállítva, hogy a kötések átlagos száma megegyezzen a modellével; 200 futás, seed = 42.
+
+| Modell | Modell hozama (%) | Véletlen átlag (%) | Véletlen 5–95% (%) | Modell percentilise |
+|---|---|---|---|---|
+| XGBoost | 123,42 | 16,42 | -33,57 – 74,67 | 99,0% |
+| LSTM | 35,11 | 13,07 | -32,49 – 72,31 | 78,0% |
+
+Az XGBoost belépési időzítése a véletlennél jobb (a Sharpe-ráta percentilise szintén 99,0%), az LSTM-é nem különbözik érdemben a véletlen belépéstől.
+
 ### 6.3. Jellemzőfontosság
 
 A jellemzőfontosság az egyszeri felosztáson (70/15/15) tanított modelleken készül, a teszt-15%-on (2025–2026).
@@ -245,7 +269,7 @@ Az egyszeri felosztású LSTM a validációs veszteség alapján a 4. korszakná
 
 ### 6.4. Triple Barrier vs. fix horizontos címkézés (RQ2)
 
-A kontrollkísérlet ugyanazt a csővezetéket futtatja (jellemzők, 29 Walk-Forward ablak, hiperparaméterek, backtest-szabályok), csak a tanító címke más: a 24 gyertyás log-hozam előjele egy fix semleges sávval (|r| ≤ 0,096%). A sáv szélessége úgy van kalibrálva az első tanítóablakon, hogy a semleges arány ott megegyezzen a Triple Barrierével. A két címkézés a sorok 69,8%-ában egyezik; a teljes mintán a fix horizontos eloszlás Long 49,9%, Short 38,7%, Semleges 11,5%.
+A kontrollkísérlet ugyanazt a feldolgozási folyamatot futtatja (jellemzők, 29 Walk-Forward ablak, hiperparaméterek, backtest-szabályok), csak a tanító címke más: a 24 gyertyás log-hozam előjele egy fix semleges sávval (|r| ≤ 0,096%). A sáv szélessége úgy van kalibrálva az első tanítóablakon, hogy a semleges arány ott megegyezzen a Triple Barrierével. A két címkézés a sorok 69,8%-ában egyezik; a teljes mintán a fix horizontos eloszlás Long 49,9%, Short 38,7%, Semleges 11,5%.
 
 Osztályozás (argmax, mindkettő a saját címkéihez mérve):
 
@@ -289,6 +313,21 @@ Backtest (azonos szabályok, csak a tanító címke más):
 
 Kimenetek: `reports/fixed_horizon/rq2_classification_us500.csv`, `rq2_signal_quality_us500.csv`, `rq2_wilcoxon_us500.csv`, `rq2_backtest_comparison_us500.csv`, `figures/equity_tb_vs_fixed_us500.png`.
 
+### 6.5. Kontrollkísérlet: spot arany (XAUUSD)
+
+A `Control_XAUUSD/` mappa ugyanezt a kódot futtatja a spot arany H1 adatsorán, az arany saját első tanítóablakán újrahangolt hiperparaméterekkel. A letöltött adatban 2021 tavaszáig minden nap 00:00-kor egy napi összesítő gyertya szerepelt, amelynek záróára a nap végi ár volt; ezeket a `clean_gold_data.py` törli, és a 2021-es nulla spreadeket is pótolja. A részletek a mappa saját README-jében vannak.
+
+| Mutató | XGBoost | LSTM | Buy & Hold |
+|---|---|---|---|
+| Macro-F1 (küszöbös) | 0,320 | 0,334 | – |
+| Total Return (%) | 138,51 | 98,98 | 246,97 |
+| Sharpe-ráta | 0,95 | 0,77 | 1,03 |
+| Max Drawdown (%) | -18,49 | -27,73 | -28,76 |
+| Profit Factor | 1,20 | 1,14 | – |
+| Véletlen belépésnél jobb futások aránya | 99,5% | 95,5% | – |
+
+A véletlen tippelés referenciája az aranyon 33,28% pontosság és 0,324 macro-F1. Az osztályozás itt is a véletlen szintje körül marad, a kereskedési eredmény mindkét modellnél a Buy & Hold alatt, de a véletlen belépés fölött van.
+
 ---
 
 ## 7. Ismert korlátok
@@ -299,7 +338,9 @@ Kimenetek: `reports/fixed_horizon/rq2_classification_us500.csv`, `rq2_signal_qua
 - **Pozícióméret és tőkeáttétel:** a pozícióméret az 1% kockázatból és a stop-loss távolságából adódik, tőkeáttétel-korlát nélkül. A kötésnapló alapján a pozíciók névértéke a tőke mediánban kb. 2,3-szerese (LSTM: 2,0), legfeljebb kb. 8-szorosa, a kötések kb. 90%-ában meghaladja a tőkét.
 - **Backtest-egyszerűsítések:** az SL/TP kilépéseknél külön spread nem kerül levonásra, a belépés a jelet adó gyertya záróárán történik, a tőkegörbe a lezárt ügyletek realizált eredményét mutatja, szemben a minden gyertyán értékelt Buy & Hold alappal.
 - **Napszaki jelzők:** a szerveridő fix ablakai az amerikai tőzsdei főszakaszt csak részben fedik le.
-- **Egy eszköz, egy randomseed:** az eredmények szórása nem ismert, és az általánosíthatóság nem igazolt.
+- **Egy randomseed, két eszköz:** a modellek egyetlen véletlenmaggal készültek, ezért az eredmények szórása nem ismert. Az általánosíthatóságot csak egy második eszközön (spot arany) vizsgáltuk.
+- **Az LSTM bemenetei nincsenek skálázva:** az RSI 0 és 100 között mozog, a hozamok nagyságrendje 0,001. Ez torzíthatja a tanulást, és szerepet játszhat abban, hogy a permutációs vizsgálatban az RSI kiugróan fontos.
+- **Véletlen belépésű összehasonlítás:** a véletlen belépések időben egyenletesen oszlanak el, a modell jelzései viszont csomósodnak és napszakfüggők, ezért a modell előnyének egy része napszakhatás is lehet.
 
 ---
 
@@ -313,6 +354,9 @@ Kimenetek: `reports/fixed_horizon/rq2_classification_us500.csv`, `rq2_signal_qua
 - `reports/backtest_metrics_comparison_us500.csv`: gazdasági és kockázati mutatók.
 - `reports/feature_importance_comparison_us500.csv`: XGBoost (gain) és LSTM (permutációs) jellemzőfontosság.
 - `reports/figures/`: tőkegörbék, visszaesési görbék, tanulási görbék, konfúziós mátrixok, jellemzőfontossági és Optuna-ábrák.
+- `reports/random_baseline_us500.csv`: a véletlen tippelés pontossága és macro-F1 értéke (50 futás átlaga és szórása).
+- `reports/random_entry_benchmark_us500.csv`: a modellek és a véletlen belépésű stratégia mutatói, a modell percentilisével.
+- `Control_XAUUSD/`: a spot arany kontrollkísérlet teljes kódja és eredményei.
 
 ---
 
