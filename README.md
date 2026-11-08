@@ -362,7 +362,7 @@ A véletlen tippelés referenciája az aranyon 33,28% pontosság és 0,324 macro
 
 ## 9. Szerző és licenc
 
-- **Készítette:** Grama Ákos, Budapesti Gazdaságtudományi Egyetem, Pénzügy és Számvitel Kar, Gazdaságinformatikus BA/BSc, Pénzügyi informatikus specializáció
+- **Készítette:** Grama Ákos, Budapesti Gazdaságtudományi Egyetem, Pénzügy és Számvitel Kar, Gazdaságinformatikus BA/BSc, Pénzintézeti informatikus specializáció
 - **Témavezető:** Dr. Buza Krisztián Antal, egyetemi docens
 - **Év:** 2026
 - **Licenc:** MIT License
